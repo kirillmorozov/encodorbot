@@ -7,8 +7,9 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
-	"github.com/kirillmorozov/encodor/beghilosz"
+	"github.com/kirillmorozov/encodor/cmd"
 	"go.uber.org/zap"
 )
 
@@ -68,12 +69,18 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 		zap.String("severity", "NOTICE"))
 	// Special handling of start message
 	if update.Message.Text == startCommand {
-		update.Message.Text = "All those moments will be lost in time, like tears in rain."
+		update.Message.Text = "-h"
 	}
-	// BEGHILOSZ encode incomming message
-	encoded_text := beghilosz.Encode(update.Message.Text)
-	// Send the punchline back to Telegram
-	telegramResponseBody, errTelegram := sendTextToTelegramChat(update.Message.Chat.Id, encoded_text)
+	var output strings.Builder
+	if ecnodeErr := cmd.ExecuteCustomIO(strings.Fields(update.Message.Text), &output); ecnodeErr != nil {
+		logger.Error("Error encodor command execution",
+			zap.String("args", update.Message.Text),
+			zap.String("severity", "ERROR"),
+			zap.Error(ecnodeErr),
+		)
+		output.WriteString("Unrecognised command. Send '--help' for usage.")
+	}
+	telegramResponseBody, errTelegram := sendTextToTelegramChat(update.Message.Chat.Id, output.String())
 	if errTelegram != nil {
 		logger.Error("Error from Telegram",
 			zap.String("response", telegramResponseBody),
@@ -81,7 +88,7 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 			zap.Error(errTelegram))
 	} else {
 		logger.Info("Successfully sent encoded message",
-			zap.String("text", encoded_text),
+			zap.String("text", output.String()),
 			zap.Int("chat_id", update.Message.Chat.Id),
 			zap.String("severity", "NOTICE"))
 	}
