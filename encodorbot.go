@@ -45,7 +45,8 @@ func parseTelegramRequest(r *http.Request) (*Update, error) {
 	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
 		logger.Error("Could not decode incoming update",
 			zap.Error(err),
-			zap.String("severity", "ERROR"))
+			zap.String("severity", "ERROR"),
+		)
 		return nil, err
 	}
 	return &update, nil
@@ -59,15 +60,16 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Error parsing update",
 			zap.String("severity", "ERROR"),
-			zap.Error(err))
+			zap.Error(err),
+		)
 		return
 	}
 	logger.Info("New message received",
 		zap.Int("update_id", update.UpdateId),
 		zap.String("text", update.Message.Text),
 		zap.Int("chat_id", update.Message.Chat.Id),
-		zap.String("severity", "NOTICE"))
-	// Special handling of start message
+		zap.String("severity", "NOTICE"),
+	)
 	if update.Message.Text == startCommand {
 		update.Message.Text = "-h"
 	}
@@ -85,12 +87,14 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 		logger.Error("Error from Telegram",
 			zap.String("response", telegramResponseBody),
 			zap.String("severity", "ERROR"),
-			zap.Error(errTelegram))
+			zap.Error(errTelegram),
+		)
 	} else {
 		logger.Info("Successfully sent encoded message",
 			zap.String("text", output.String()),
 			zap.Int("chat_id", update.Message.Chat.Id),
-			zap.String("severity", "NOTICE"))
+			zap.String("severity", "NOTICE"),
+		)
 	}
 }
 
@@ -103,11 +107,13 @@ func sendTextToTelegramChat(chatId int, text string) (string, error) {
 		url.Values{
 			"chat_id": {strconv.Itoa(chatId)},
 			"text":    {text},
-		})
+		},
+	)
 	if err != nil {
 		logger.Error("Error when posting text to the chat",
 			zap.String("severity", "ERROR"),
-			zap.Error(err))
+			zap.Error(err),
+		)
 		return "", err
 	}
 	defer response.Body.Close()
@@ -115,12 +121,14 @@ func sendTextToTelegramChat(chatId int, text string) (string, error) {
 	if errRead != nil {
 		logger.Error("Error in parsing telegram answer",
 			zap.String("severity", "ERROR"),
-			zap.Error(errRead))
+			zap.Error(errRead),
+		)
 		return "", err
 	}
 	bodyString := string(bodyBytes)
 	logger.Info("Telegram response body",
 		zap.String("response", bodyString),
-		zap.String("severity", "INFO"))
+		zap.String("severity", "INFO"),
+	)
 	return bodyString, nil
 }
