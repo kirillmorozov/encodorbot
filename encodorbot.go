@@ -80,7 +80,6 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 			zap.String("severity", "ERROR"),
 			zap.Error(ecnodeErr),
 		)
-		output.WriteString("Unrecognised command. Send '--help' for usage.")
 	}
 	telegramResponseBody, errTelegram := sendTextToTelegramChat(update.Message.Chat.Id, output.String())
 	if errTelegram != nil {
