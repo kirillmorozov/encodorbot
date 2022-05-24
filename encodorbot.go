@@ -68,7 +68,7 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 		zap.Int("update_id", update.UpdateId),
 		zap.String("text", update.Message.Text),
 		zap.Int("chat_id", update.Message.Chat.Id),
-		zap.String("severity", "NOTICE"),
+		zap.String("severity", "DEBUG"),
 	)
 	if update.Message.Text == startCommand {
 		update.Message.Text = "-h"
@@ -77,7 +77,7 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 	if ecnodeErr := cmd.ExecuteCustomIO(strings.Fields(update.Message.Text), &output); ecnodeErr != nil {
 		logger.Error("Error encodor command execution",
 			zap.String("args", update.Message.Text),
-			zap.String("severity", "ERROR"),
+			zap.String("severity", "WARNING"),
 			zap.Error(ecnodeErr),
 		)
 	}
@@ -92,7 +92,7 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 		logger.Info("Successfully sent encoded message",
 			zap.String("text", output.String()),
 			zap.Int("chat_id", update.Message.Chat.Id),
-			zap.String("severity", "NOTICE"),
+			zap.String("severity", "INFO"),
 		)
 	}
 }
@@ -118,7 +118,7 @@ func sendTextToTelegramChat(chatId int, text string) (string, error) {
 	defer response.Body.Close()
 	bodyBytes, errRead := ioutil.ReadAll(response.Body)
 	if errRead != nil {
-		logger.Error("Error in parsing telegram answer",
+		logger.Error("Error when parsing telegram answer",
 			zap.String("severity", "ERROR"),
 			zap.Error(errRead),
 		)
@@ -127,7 +127,7 @@ func sendTextToTelegramChat(chatId int, text string) (string, error) {
 	bodyString := string(bodyBytes)
 	logger.Info("Telegram response body",
 		zap.String("response", bodyString),
-		zap.String("severity", "INFO"),
+		zap.String("severity", "DEBUG"),
 	)
 	return bodyString, nil
 }
