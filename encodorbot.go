@@ -99,10 +99,10 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Info(
 		"Successfully sent encoded message",
-		zap.String("text", output.String()),
 		zap.Int("chat_id", update.Message.Chat.Id),
+		zap.String("args", update.Message.Text),
+		zap.String("text", output.String()),
 		zap.String("severity", "INFO"),
-		zap.String("telegram reply", telegramResponseBody),
 	)
 }
 
