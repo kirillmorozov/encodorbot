@@ -6,8 +6,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/kirillmorozov/encodor v0.0.0-20220524202433-d0d3508dff4f h1:WUNr42pvpn/5Kf55o6bNv+lOf4lzHAvlSVaUCYsSeKE=
-github.com/kirillmorozov/encodor v0.0.0-20220524202433-d0d3508dff4f/go.mod h1:+Em9P83u+0FD+9yS8gSol1upCZVEN0snfMZu0Osoyco=
+github.com/kirillmorozov/encodor v0.0.0-20220526084910-08bc89687033 h1:I8+wZftnDhjsRPotq2fHfb/E0m2o7xVu0G5EnDBqN7M=
+github.com/kirillmorozov/encodor v0.0.0-20220526084910-08bc89687033/go.mod h1:+Em9P83u+0FD+9yS8gSol1upCZVEN0snfMZu0Osoyco=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=

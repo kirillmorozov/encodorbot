@@ -76,8 +76,11 @@ func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
 	if update.Message.Text == startCommand {
 		update.Message.Text = "--help"
 	}
+	encodorCmd := cmd.NewRoot()
 	var output strings.Builder
-	if ecnodeErr := cmd.ExecuteCustomIO(strings.Fields(update.Message.Text), &output); ecnodeErr != nil {
+	encodorCmd.SetArgs(strings.Fields(update.Message.Text))
+	encodorCmd.SetOut(&output)
+	if ecnodeErr := encodorCmd.Execute(); ecnodeErr != nil {
 		logger.Error(
 			"Error encodor command execution",
 			zap.String("args", update.Message.Text),
