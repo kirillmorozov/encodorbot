@@ -60,7 +60,7 @@ func handleBeghilosz(c telebot.Context) error {
 		usage := fmt.Sprintf(beghiloszUsage, beghiloszCommand)
 		return c.Reply(usage)
 	}
-	encodedText := beghilosz.Encode(c.Message().Text)
+	encodedText := beghilosz.Encode(c.Message().Payload)
 	return c.Reply(encodedText)
 }
 
@@ -69,7 +69,7 @@ func handleZalgo(c telebot.Context) error {
 		usage := fmt.Sprintf(zalgoUsage, zalgoCommand)
 		return c.Reply(usage)
 	}
-	encodedText, encodeErr := zalgo.Encode(c.Message().Text, 3)
+	encodedText, encodeErr := zalgo.Encode(c.Message().Payload, 3)
 	if encodeErr != nil {
 		return encodeErr
 	}
