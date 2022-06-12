@@ -21,7 +21,7 @@ func newBot() (*telebot.Bot, error) {
 		return nil, botErr
 	}
 	bot.Handle("/start", handleStart)
-	bot.Handle("", handleText)
+	bot.Handle(telebot.OnText, handleText)
 	return bot, nil
 }
 
