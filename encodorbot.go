@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,15 +15,15 @@ const (
 	tokenEnvVar = "TELEGRAM_BOT_TOKEN"
 )
 
-func newBot() (*telebot.Bot, error) {
+func newBot() *telebot.Bot {
 	settings := telebot.Settings{Token: os.Getenv(tokenEnvVar)}
 	bot, botErr := telebot.NewBot(settings)
 	if botErr != nil {
-		return nil, botErr
+		log.Fatal(botErr)
 	}
 	bot.Handle("/start", handleStart)
 	bot.Handle(telebot.OnText, handleText)
-	return bot, nil
+	return bot
 }
 
 func handleStart(c telebot.Context) error {
@@ -49,13 +50,11 @@ func handleText(c telebot.Context) error {
 
 // HandleTelegramWebHook sends a message back to the chat in encoded form
 func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
-	bot, botErr := newBot()
-	if botErr != nil {
-		panic(botErr.Error())
-	}
+	bot := newBot()
 	var update telebot.Update
 	if decodeErr := json.NewDecoder(r.Body).Decode(&update); decodeErr != nil {
-		panic(decodeErr.Error())
+		log.Print(decodeErr)
+		return
 	}
 	bot.ProcessUpdate(update)
 }
