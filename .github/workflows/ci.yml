@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Function
+        id: sls-func
+        uses: yc-actions/yc-sls-function@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+          folder-id: encodorbot
+          function-name: encodorbot
+          runtime: "golang117"
+          memory: "128Mb"
+          execution-timeout: 1
+          entrypoint: encodorbot.HandleTelegramWebHook
+          environment: |
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          include: |
+            **/*.go
+            go.mod
+            go.sum
+          tags: |
+            ${{ GITHUB_SHA::6 }}
