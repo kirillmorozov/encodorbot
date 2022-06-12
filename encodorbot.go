@@ -25,13 +25,21 @@ const (
 )
 
 const (
-	botUsage       = `Henlo`
-	beghiloszUsage = `To encode your message using calculator spelling send %v YOUR MESSAGE`
-	zalgoUsage     = `To encode your message using zalgo send %v YOUR MESSAGE`
+	botUsage = `Usage:
+	[command] your message
+
+Available Commands:
+	%v – Encode your message using calculator spelling
+	%v – Encode your message using zalgo`
+	beghiloszUsage = "To encode your message using calculator spelling send `%v YOUR MESSAGE`"
+	zalgoUsage     = "To encode your message using zalgo send `%v YOUR MESSAGE`"
 )
 
 func newBot() *telebot.Bot {
-	settings := telebot.Settings{Token: os.Getenv(tokenEnvVar)}
+	settings := telebot.Settings{
+		Token:     os.Getenv(tokenEnvVar),
+		ParseMode: telebot.ModeMarkdownV2,
+	}
 	bot, botErr := telebot.NewBot(settings)
 	if botErr != nil {
 		log.Fatal(botErr)
@@ -44,20 +52,22 @@ func newBot() *telebot.Bot {
 }
 
 func handleStart(c telebot.Context) error {
-	return c.Reply(botUsage)
+	return c.Reply(fmt.Sprintf(botUsage, beghiloszCommand, zalgoCommand))
 }
 
 func handleBeghilosz(c telebot.Context) error {
-	if c.Message().Text == "" {
-		return c.Reply(fmt.Sprintf(beghiloszUsage, beghiloszCommand))
+	if c.Message().Payload == "" {
+		usage := fmt.Sprintf(beghiloszUsage, beghiloszCommand)
+		return c.Reply(usage)
 	}
 	encodedText := beghilosz.Encode(c.Message().Text)
 	return c.Reply(encodedText)
 }
 
 func handleZalgo(c telebot.Context) error {
-	if c.Message().Text == "" {
-		return c.Reply(fmt.Sprintf(zalgoUsage, zalgoCommand))
+	if c.Message().Payload == "" {
+		usage := fmt.Sprintf(zalgoUsage, zalgoCommand)
+		return c.Reply(usage)
 	}
 	encodedText, encodeErr := zalgo.Encode(c.Message().Text, 3)
 	if encodeErr != nil {
