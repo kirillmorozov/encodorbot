@@ -15,7 +15,7 @@ const (
 )
 
 func newBot() (*telebot.Bot, error) {
-	settings := telebot.Settings{Token: os.Getenv(tokenEnvVar), Verbose: true}
+	settings := telebot.Settings{Token: os.Getenv(tokenEnvVar)}
 	bot, botErr := telebot.NewBot(settings)
 	if botErr != nil {
 		return nil, botErr
