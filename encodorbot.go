@@ -1,148 +1,115 @@
-package encodorbot
+package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"log"
 	"net/http"
-	"net/url"
 	"os"
-	"strconv"
 	"strings"
 
+	"github.com/kirillmorozov/encodor/beghilosz"
 	"github.com/kirillmorozov/encodor/cmd"
-	"go.uber.org/zap"
+	"github.com/kirillmorozov/encodor/zalgo"
+	"gopkg.in/telebot.v3"
 )
 
-var logger *zap.Logger
+const (
+	// tokenEnvVar is an environment variable that contains telegram bot token.
+	tokenEnvVar = "TELEGRAM_BOT_TOKEN"
+)
 
-// Message is a Telegram object that can be found in an update.
-type Message struct {
-	Text string `json:"text"`
-	Chat Chat   `json:"chat"`
-}
+const (
+	// startCommand is the first command that's send from the new user.
+	startCommand = "/start"
+	// beghiloszCommand is the command that's used to encode messages using
+	// calculator spelling.
+	beghiloszCommand = "/beghilosz"
+	// zalgoCommand is the command that's used to encode messages zalgo.
+	zalgoCommand = "/zalgo"
+)
 
-// Update is a Telegram object that the handler receives every time an user
-// interacts with the bot.
-type Update struct {
-	UpdateId int     `json:"update_id"`
-	Message  Message `json:"message"`
-}
+const (
+	// botUsage is format that explains bot usage.
+	botUsage = `Usage:
+	[command] your message
 
-// A Telegram Chat indicates the conversation to which the message belongs.
-type Chat struct {
-	Id int `json:"id"`
-}
+Available Commands:
+	%v – Encode your message using calculator spelling
+	%v – Encode your message using zalgo`
+	// beghiloszUsage is a format string that expains beghiloszCommand usage.
+	beghiloszUsage = "To encode your message using calculator spelling send `%v YOUR MESSAGE`"
+	// zalgoUsage is a format string that expains zalgoCommand usage.
+	zalgoUsage = "To encode your message using zalgo send `%v YOUR MESSAGE`"
+)
 
-const startCommand = "/start"
-
-func init() {
-	logger, _ = zap.NewProduction()
-}
-
-// parseTelegramRequest handles incoming update from the Telegram web hook
-func parseTelegramRequest(r *http.Request) (*Update, error) {
-	var update Update
-	if decodeErr := json.NewDecoder(r.Body).Decode(&update); decodeErr != nil {
-		logger.Error(
-			"Could not decode incoming update",
-			zap.String("severity", "ERROR"),
-			zap.Error(decodeErr),
-		)
-		return nil, decodeErr
+// newBot returns a configured telegram bot.
+func newBot() *telebot.Bot {
+	settings := telebot.Settings{
+		Token:     os.Getenv(tokenEnvVar),
+		ParseMode: telebot.ModeMarkdownV2,
 	}
-	return &update, nil
+	bot, botErr := telebot.NewBot(settings)
+	if botErr != nil {
+		log.Fatal(botErr)
+	}
+	bot.Handle(startCommand, handleStart)
+	bot.Handle(beghiloszCommand, handleBeghilosz)
+	bot.Handle(zalgoCommand, handleZalgo)
+	bot.Handle(telebot.OnText, handleText)
+	return bot
 }
 
-// HandleTelegramWebHook sends a message back to the chat in encoded form
-func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
-	defer logger.Sync() //nolint:errcheck
-	// Parse incoming request
-	update, parseErr := parseTelegramRequest(r)
-	if parseErr != nil {
-		logger.Error(
-			"Error parsing update",
-			zap.String("severity", "ERROR"),
-			zap.Error(parseErr),
-		)
-		return
+// handleStart handles startCommand messages.
+func handleStart(c telebot.Context) error {
+	return c.Reply(fmt.Sprintf(botUsage, beghiloszCommand, zalgoCommand))
+}
+
+// handleBeghilosz handles beghiloszCommand messages.
+func handleBeghilosz(c telebot.Context) error {
+	if c.Message().Payload == "" {
+		usage := fmt.Sprintf(beghiloszUsage, beghiloszCommand)
+		return c.Reply(usage)
 	}
-	logger.Info(
-		"New message received",
-		zap.Int("update_id", update.UpdateId),
-		zap.String("text", update.Message.Text),
-		zap.Int("chat_id", update.Message.Chat.Id),
-		zap.String("severity", "DEBUG"),
-	)
-	if update.Message.Text == startCommand {
-		update.Message.Text = "--help"
+	encodedText := beghilosz.Encode(c.Message().Payload)
+	return c.Reply(encodedText)
+}
+
+// handleZalgo handles zalgoCommand messages.
+func handleZalgo(c telebot.Context) error {
+	if c.Message().Payload == "" {
+		usage := fmt.Sprintf(zalgoUsage, zalgoCommand)
+		return c.Reply(usage)
 	}
+	encodedText, encodeErr := zalgo.Encode(c.Message().Payload, 3)
+	if encodeErr != nil {
+		return encodeErr
+	}
+	return c.Reply(encodedText)
+}
+
+// handleText handles all plain text messages.
+func handleText(c telebot.Context) error {
 	encodorCmd := cmd.NewRoot()
 	var output strings.Builder
-	encodorCmd.SetArgs(strings.Fields(update.Message.Text))
+	encodorCmd.SetArgs(strings.Fields(c.Message().Text))
 	encodorCmd.SetOut(&output)
-	if ecnodeErr := encodorCmd.Execute(); ecnodeErr != nil {
-		logger.Error(
-			"Error encodor command execution",
-			zap.String("args", update.Message.Text),
-			zap.String("severity", "WARNING"),
-			zap.Error(ecnodeErr),
-		)
+	if encodeErr := encodorCmd.Execute(); encodeErr != nil {
+		return encodeErr
 	}
-	telegramResponseBody, errTelegram := sendTextToTelegramChat(update.Message.Chat.Id, output.String())
-	if errTelegram != nil {
-		logger.Error(
-			"Error from Telegram",
-			zap.Int("chat_id", update.Message.Chat.Id),
-			zap.String("text", output.String()),
-			zap.String("response", telegramResponseBody),
-			zap.String("severity", "ERROR"),
-			zap.Error(errTelegram),
-		)
-		return
-	}
-	logger.Info(
-		"Successfully sent encoded message",
-		zap.Int("chat_id", update.Message.Chat.Id),
-		zap.String("args", update.Message.Text),
-		zap.String("text", output.String()),
-		zap.String("severity", "INFO"),
-	)
+	return c.Reply(output.String())
 }
 
-// sendTextToTelegramChat sends a text message to the Telegram chat identified
-// by its chat Id
-func sendTextToTelegramChat(chatId int, text string) (string, error) {
-	var telegramApi string = "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_BOT_TOKEN") + "/sendMessage"
-	response, postErr := http.PostForm(
-		telegramApi,
-		url.Values{
-			"chat_id": {strconv.Itoa(chatId)},
-			"text":    {text},
-		},
-	)
-	if postErr != nil {
-		logger.Error(
-			"Error when posting text to the chat",
-			zap.String("severity", "ERROR"),
-			zap.Error(postErr),
-		)
-		return "", postErr
+// HandleTelegramWebHook is the cloud function entry point.
+//
+// It decodes a telebot.Update from the http.Request, creates a pre-configured
+// telebot.Bot and processes the update through this bot.
+func HandleTelegramWebHook(w http.ResponseWriter, r *http.Request) {
+	var update telebot.Update
+	if decodeErr := json.NewDecoder(r.Body).Decode(&update); decodeErr != nil {
+		log.Print(decodeErr)
+		return
 	}
-	defer response.Body.Close()
-	bodyBytes, errRead := ioutil.ReadAll(response.Body)
-	if errRead != nil {
-		logger.Error(
-			"Error when parsing telegram answer",
-			zap.String("severity", "ERROR"),
-			zap.Error(errRead),
-		)
-		return "", errRead
-	}
-	bodyString := string(bodyBytes)
-	logger.Info(
-		"Telegram response body",
-		zap.String("response", bodyString),
-		zap.String("severity", "DEBUG"),
-	)
-	return bodyString, nil
+	bot := newBot()
+	bot.ProcessUpdate(update)
 }
