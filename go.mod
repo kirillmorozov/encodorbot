@@ -3,7 +3,7 @@ module github.com/kirillmorozov/encodorbot
 go 1.17
 
 require (
-	github.com/kirillmorozov/encodor v0.0.0-20220528131532-08ba9e7c2670
+	github.com/kirillmorozov/encodor v0.0.0-20220612223159-2ddf7f181db6
 	gopkg.in/telebot.v3 v3.0.0
 )
 
