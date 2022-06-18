@@ -6,8 +6,8 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-// escapeMarkdownV2 escapes telegram markup symbols.
-func escapeMarkdownV2(text string, entityType telebot.EntityType) string {
+// EscapeMarkdownV2 escapes telegram markup symbols.
+func EscapeMarkdownV2(text string, entityType telebot.EntityType) string {
 	var escapeChars string
 	switch entityType {
 	case telebot.EntityCode, telebot.EntityCodeBlock:

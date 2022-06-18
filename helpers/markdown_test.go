@@ -6,7 +6,7 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-func Test_escapeMarkdownV2(t *testing.T) {
+func Test_EscapeMarkdownV2(t *testing.T) {
 	type args struct {
 		text       string
 		entityType telebot.EntityType
@@ -53,7 +53,7 @@ func Test_escapeMarkdownV2(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := escapeMarkdownV2(tt.args.text, tt.args.entityType); got != tt.want {
+			if got := EscapeMarkdownV2(tt.args.text, tt.args.entityType); got != tt.want {
 				t.Errorf("escapeMarkdownV2() = %v, want %v", got, tt.want)
 			}
 		})
