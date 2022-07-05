@@ -91,7 +91,7 @@ func handleText(c telebot.Context) error {
 	if encodeErr := encodorCmd.Execute(); encodeErr != nil {
 		return encodeErr
 	}
-	return c.Reply(output.String())
+	return c.Reply(helpers.EscapeMarkdownV2(output.String(), ""))
 }
 
 // HandleTelegramWebHook is the cloud function entry point.
