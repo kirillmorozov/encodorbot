@@ -30,7 +30,7 @@ const (
 	zalgoCommand = "/zalgo"
 )
 
-// newBot returns a configured telegram bot.
+// newBot returns a configured encodor bot.
 func newBot() *telebot.Bot {
 	settings := telebot.Settings{
 		Token:     os.Getenv(tokenEnvVar),
@@ -47,7 +47,7 @@ func newBot() *telebot.Bot {
 	return bot
 }
 
-// handleStart handles startCommand messages.
+// handleStart handles /start messages.
 func handleStart(c telebot.Context) error {
 	usage := fmt.Sprintf(`Usage:
 	[command] your message
@@ -59,7 +59,7 @@ Available Commands:
 	return c.Reply(usage)
 }
 
-// handleBeghilosz handles beghiloszCommand messages.
+// handleBeghilosz handles /beghilosz commands.
 func handleBeghilosz(c telebot.Context) error {
 	if c.Message().Payload == "" {
 		usage := fmt.Sprintf("To encode your message using calculator spelling send `%v YOUR MESSAGE`", beghiloszCommand)
@@ -69,7 +69,7 @@ func handleBeghilosz(c telebot.Context) error {
 	return c.Reply(helpers.EscapeMarkdownV2(encodedText, ""))
 }
 
-// handleZalgo handles zalgoCommand messages.
+// handleZalgo handles /zalgo commands.
 func handleZalgo(c telebot.Context) error {
 	if c.Message().Payload == "" {
 		usage := fmt.Sprintf("To encode your message using zalgo send `%v YOUR MESSAGE`", zalgoCommand)
