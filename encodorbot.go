@@ -11,6 +11,7 @@ import (
 	"github.com/kirillmorozov/encodor/beghilosz"
 	"github.com/kirillmorozov/encodor/cmd"
 	"github.com/kirillmorozov/encodor/zalgo"
+	"github.com/kirillmorozov/encodorbot/helpers"
 	"gopkg.in/telebot.v3"
 )
 
@@ -29,21 +30,7 @@ const (
 	zalgoCommand = "/zalgo"
 )
 
-const (
-	// botUsage is format that explains bot usage.
-	botUsage = `Usage:
-	[command] your message
-
-Available Commands:
-	%v – Encode your message using calculator spelling
-	%v – Encode your message using zalgo`
-	// beghiloszUsage is a format string that expains beghiloszCommand usage.
-	beghiloszUsage = "To encode your message using calculator spelling send `%v YOUR MESSAGE`"
-	// zalgoUsage is a format string that expains zalgoCommand usage.
-	zalgoUsage = "To encode your message using zalgo send `%v YOUR MESSAGE`"
-)
-
-// newBot returns a configured telegram bot.
+// newBot returns a configured encodor bot.
 func newBot() *telebot.Bot {
 	settings := telebot.Settings{
 		Token:     os.Getenv(tokenEnvVar),
@@ -60,32 +47,39 @@ func newBot() *telebot.Bot {
 	return bot
 }
 
-// handleStart handles startCommand messages.
+// handleStart handles /start messages.
 func handleStart(c telebot.Context) error {
-	return c.Reply(fmt.Sprintf(botUsage, beghiloszCommand, zalgoCommand))
+	usage := fmt.Sprintf(`Usage:
+	[command] your message
+
+Available Commands:
+	%v - Encode your message using calculator spelling
+	%v - Encode your message using zalgo`, beghiloszCommand, zalgoCommand)
+	usage = helpers.EscapeMarkdownV2(usage, "")
+	return c.Reply(usage)
 }
 
-// handleBeghilosz handles beghiloszCommand messages.
+// handleBeghilosz handles /beghilosz commands.
 func handleBeghilosz(c telebot.Context) error {
 	if c.Message().Payload == "" {
-		usage := fmt.Sprintf(beghiloszUsage, beghiloszCommand)
+		usage := fmt.Sprintf("To encode your message using calculator spelling send `%v YOUR MESSAGE`", beghiloszCommand)
 		return c.Reply(usage)
 	}
 	encodedText := beghilosz.Encode(c.Message().Payload)
-	return c.Reply(encodedText)
+	return c.Reply(helpers.EscapeMarkdownV2(encodedText, ""))
 }
 
-// handleZalgo handles zalgoCommand messages.
+// handleZalgo handles /zalgo commands.
 func handleZalgo(c telebot.Context) error {
 	if c.Message().Payload == "" {
-		usage := fmt.Sprintf(zalgoUsage, zalgoCommand)
+		usage := fmt.Sprintf("To encode your message using zalgo send `%v YOUR MESSAGE`", zalgoCommand)
 		return c.Reply(usage)
 	}
 	encodedText, encodeErr := zalgo.Encode(c.Message().Payload, 3)
 	if encodeErr != nil {
 		return encodeErr
 	}
-	return c.Reply(encodedText)
+	return c.Reply(helpers.EscapeMarkdownV2(encodedText, ""))
 }
 
 // handleText handles all plain text messages.
@@ -97,7 +91,7 @@ func handleText(c telebot.Context) error {
 	if encodeErr := encodorCmd.Execute(); encodeErr != nil {
 		return encodeErr
 	}
-	return c.Reply(output.String())
+	return c.Reply(helpers.EscapeMarkdownV2(output.String(), ""))
 }
 
 // HandleTelegramWebHook is the cloud function entry point.

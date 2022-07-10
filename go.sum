@@ -13,6 +13,8 @@ github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NH
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/kirillmorozov/encodor v0.0.0-20220528131532-08ba9e7c2670 h1:Mx9uEzT/h8/xxJS3RbNDqY6HfQ+SzS/TIvk89nlPe3s=
 github.com/kirillmorozov/encodor v0.0.0-20220528131532-08ba9e7c2670/go.mod h1:+Em9P83u+0FD+9yS8gSol1upCZVEN0snfMZu0Osoyco=
+github.com/kirillmorozov/encodor v0.0.0-20220612223159-2ddf7f181db6 h1:izpaf03ma/eyj1M6u5q8yMFls1RrxPfKFJla1n48AbM=
+github.com/kirillmorozov/encodor v0.0.0-20220612223159-2ddf7f181db6/go.mod h1:Q8xKvvACKPcWlo6WXURBNEQuiCltm/qrK52MoYDFlXE=
 github.com/leodido/go-urn v1.2.0/go.mod h1:+8+nEpDfqqsY+g338gtMEUOtuK+4dEMhiQEgxpxOKII=
 github.com/mattn/go-colorable v0.1.8/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-colorable v0.1.9/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
